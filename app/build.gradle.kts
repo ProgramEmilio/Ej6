@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.ej6"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.ej6"
@@ -79,6 +79,5 @@ dependencies {
     // Navigation
     implementation ("androidx.navigation:navigation-fragment-ktx:2.7.3")
     implementation ("androidx.navigation:navigation-ui-ktx:2.7.3")
-    implementation(libs.androidx.navigation.compose)
 
 }
