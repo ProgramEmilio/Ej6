@@ -1,35 +1,52 @@
 package com.example.ej6
 
-import AppNavHost
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.ej6.ui.theme.Ej6Theme
-import com.example.ej6.viewmodels.BooksViewModel
-
-
+import androidx.navigation.navArgument
+import com.example.ej6.viewmodels.BookViewModel
+import com.example.ej6.views.AddBookView
+import com.example.ej6.views.EditBookView
+import com.example.ej6.views.HomeView
 
 class MainActivity : ComponentActivity() {
-    private lateinit var viewModel: BooksViewModel
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
-            Ej6Theme {
-                MyApp()
-            }
+            AppNavigation()
         }
     }
+}
 
-    @Composable
-    fun MyApp() {
 
-        AppNavHost(viewModel = viewModel)
+@Composable
+fun AppNavigation(viewModel: BookViewModel = viewModel()) {
+    val navController = rememberNavController()
+    NavHost(navController, startDestination = "home") {
+        composable("home") {
+            HomeView(
+                viewModel,
+                onNavigateToAdd = { navController.navigate("add") },
+                onNavigateToEdit = { id -> navController.navigate("edit/$id") }
+            )
+        }
+        composable("add") {
+            AddBookView(viewModel, onNavigateBack = { navController.popBackStack() })
+        }
+        composable(
+            route = "edit/{bookId}",
+            arguments = listOf(navArgument("bookId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val bookId = backStackEntry.arguments?.getInt("bookId") ?: -1
+            EditBookView(bookId, viewModel, onNavigateBack = { navController.popBackStack() })
+        }
     }
 }

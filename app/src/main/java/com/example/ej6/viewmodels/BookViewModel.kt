@@ -1,22 +1,31 @@
 package com.example.ej6.viewmodels
 
+import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.ej6.Retrofit.RetrofitInstance
 import com.example.ej6.models.Book
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
-class BooksViewModel : ViewModel() {
-    private val _books = MutableStateFlow<List<Book>>(emptyList())
-    val books: StateFlow<List<Book>> get() = _books
+
+
+class BookViewModel : ViewModel() {
+    var books = mutableStateOf<List<Book>>(emptyList())
+
+    fun generateUniqueId(): Int {
+        val existingIds = books.value.map { it.id }.toSet()
+        var newId: Int
+        do {
+            newId = Random.nextInt(1, 966)
+        } while (newId in existingIds)
+        return newId
+    }
 
     fun fetchBooks() {
         viewModelScope.launch {
             try {
-                _books.value = RetrofitInstance.api.getBooks()
+                books.value = RetrofitInstance.api.getBooks()
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -34,10 +43,10 @@ class BooksViewModel : ViewModel() {
         }
     }
 
-    fun updateBook(id: Int, book: Book) {
+    fun updateBook(book: Book) {
         viewModelScope.launch {
             try {
-                RetrofitInstance.api.updateBook(id, book)
+                RetrofitInstance.api.updateBook(book.id, book)
                 fetchBooks()
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -49,7 +58,7 @@ class BooksViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 RetrofitInstance.api.deleteBook(id)
-                fetchBooks()
+                books.value = books.value.filter { it.id != id }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
